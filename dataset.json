@@ -1,0 +1,42 @@
+[
+  {
+    "input": "Product: Wireless Earbuds | Features: Noise cancellation, Bluetooth 5.0, long battery | Audience: Students | Language: English",
+    "output": "Experience immersive sound with these wireless earbuds featuring advanced noise cancellation and Bluetooth 5.0 connectivity. Designed for students, they offer long battery life to keep up with your daily routine."
+  },
+  {
+    "input": "Product: Wireless Earbuds | Features: Noise cancellation, Bluetooth 5.0, long battery | Audience: Students | Language: Tamil",
+    "output": "மேம்பட்ட ஒலி அனுபவத்தை வழங்கும் இந்த வயர்லெஸ் இயர்பட்ஸ், நொய்ஸ் கேன்சலேஷன் மற்றும் Bluetooth 5.0 உடன் வருகிறது. மாணவர்களுக்காக வடிவமைக்கப்பட்ட இவை நீண்ட நேர பேட்டரி ஆதரவை வழங்கும்."
+  },
+  {
+    "input": "Product: Smartwatch | Features: Fitness tracking, waterproof, long battery | Audience: Young users | Language: English",
+    "output": "Stay active and connected with this stylish smartwatch featuring fitness tracking and waterproof design. Perfect for young users, it ensures long-lasting battery performance throughout the day."
+  },
+  {
+    "input": "Product: Smartwatch | Features: Fitness tracking, waterproof, long battery | Audience: Young users | Language: Tamil",
+    "output": "உங்கள் உடல்நலத்தை கண்காணிக்க உதவும் இந்த ஸ்மார்ட்வாட்ச், நீர்ப்புகா வடிவமைப்பும் நீண்டநாள் பேட்டரியும் கொண்டது. இளம் பயனர்களுக்கு மிகவும் பொருத்தமானது."
+  },
+  {
+    "input": "Product: Laptop | Features: 16GB RAM, SSD, lightweight | Audience: Students | Language: English",
+    "output": "This lightweight laptop with 16GB RAM and fast SSD storage is perfect for students. It ensures smooth performance for studying, coding, and entertainment."
+  },
+  {
+    "input": "Product: Laptop | Features: 16GB RAM, SSD, lightweight | Audience: Students | Language: Tamil",
+    "output": "16GB RAM மற்றும் SSD சேமிப்பகத்துடன் கூடிய இந்த எளிதில் எடுத்துச் செல்லக்கூடிய லேப்டாப் மாணவர்களுக்கு சிறந்த தேர்வாகும். படிப்பு மற்றும் பொழுதுபோக்குக்கு சிறந்த செயல்திறன் அளிக்கிறது."
+  },
+  {
+    "input": "Product: Running Shoes | Features: Lightweight, breathable, durable | Audience: Athletes | Language: English",
+    "output": "Designed for athletes, these running shoes are lightweight, breathable, and highly durable. They provide maximum comfort and support for long-distance runs."
+  },
+  {
+    "input": "Product: Running Shoes | Features: Lightweight, breathable, durable | Audience: Athletes | Language: Tamil",
+    "output": "வீரர்களுக்காக வடிவமைக்கப்பட்ட இந்த ரன்னிங் ஷூஸ் எடை குறைந்ததும், காற்றோட்டமானதும் மற்றும் நீடித்ததுமானவை. நீண்ட தூர ஓட்டங்களுக்கு அதிக வசதியை வழங்கும்."
+  },
+  {
+    "input": "Product: Backpack | Features: Waterproof, multiple compartments, lightweight | Audience: Travelers | Language: English",
+    "output": "This waterproof backpack is ideal for travelers, featuring multiple compartments for organized storage. Its lightweight design ensures comfort during long journeys."
+  },
+  {
+    "input": "Product: Backpack | Features: Waterproof, multiple compartments, lightweight | Audience: Travelers | Language: Tamil",
+    "output": "பயணிகளுக்காக வடிவமைக்கப்பட்ட இந்த நீர்ப்புகா பை பல பிரிவுகளுடன் வருகிறது. எடை குறைவாக இருப்பதால் நீண்ட பயணங்களிலும் வசதியாக பயன்படுத்தலாம்."
+  }
+]
