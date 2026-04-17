@@ -1,5 +1,5 @@
+fine-tuned-model/
 venv/
 __pycache__/
-*.pyc
-results/
-checkpoint-*/
+*.bin
+*.safetensors
