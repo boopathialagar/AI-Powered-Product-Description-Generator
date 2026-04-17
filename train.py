@@ -29,14 +29,10 @@ for item in data:
     })
 
 dataset = Dataset.from_list(formatted_data)
-
 dataset = dataset.train_test_split(test_size=0.1, seed=42)
-
 model_name = "google/flan-t5-base"
-
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-
 lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
@@ -45,7 +41,6 @@ lora_config = LoraConfig(
     bias="none",
     task_type=TaskType.SEQ_2_SEQ_LM
 )
-
 model = get_peft_model(model, lora_config)
 model.print_trainable_parameters()
 
@@ -62,12 +57,10 @@ def tokenize(example):
         truncation=True,
         max_length=256
     )
-
     labels = [
         (l if l != tokenizer.pad_token_id else -100)
         for l in targets["input_ids"]
     ]
-
     inputs["labels"] = labels
     return inputs
 
@@ -82,18 +75,13 @@ training_args = TrainingArguments(
     learning_rate=2e-4,
     per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-
     num_train_epochs=5,
-
     eval_strategy="epoch",
-
     save_strategy="epoch",
     load_best_model_at_end=True,
     metric_for_best_model="eval_loss",
     greater_is_better=False,
-
     fp16=torch.cuda.is_available(),
-
     logging_dir="./logs",
     logging_steps=10,
 )
@@ -104,7 +92,5 @@ trainer = Trainer(
     eval_dataset=tokenized["test"],
     callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
 )
-
 trainer.train()
-
 model.save_pretrained("fine-tuned-model")
