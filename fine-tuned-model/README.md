@@ -1,8 +1,8 @@
 ---
-base_model: google/flan-t5-small
+base_model: google/flan-t5-base
 library_name: peft
 tags:
-- base_model:adapter:google/flan-t5-small
+- base_model:adapter:google/flan-t5-base
 - lora
 - transformers
 ---
@@ -203,4 +203,4 @@ Carbon emissions can be estimated using the [Machine Learning Impact calculator]
 [More Information Needed]
 ### Framework versions
 
-- PEFT 0.19.0
+- PEFT 0.18.1

@@ -98,8 +98,7 @@ training_args = TrainingArguments(
     num_train_epochs=5,
     logging_dir="./logs",
     save_strategy="epoch",
-    evaluation_strategy="no",
-    fp16=False  # Set True only if GPU available
+    fp16=False
 )
 
 # ==============================

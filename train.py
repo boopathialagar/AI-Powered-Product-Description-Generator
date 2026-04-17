@@ -1,140 +1,142 @@
-# ==============================
-# 1. LOAD DATASET
-# ==============================
 import json
+import torch
+from datasets import Dataset
+from transformers import (
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM,
+    TrainingArguments,
+    Trainer,
+    EarlyStoppingCallback
+)
+from peft import LoraConfig, get_peft_model, TaskType
 
+# ==============================
+# LOAD DATA
+# ==============================
 with open("dataset.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 formatted_data = []
 
 for item in data:
-    formatted_input = "Write a professional and SEO-friendly product description:\n" + item["input"]
-    
+    formatted_input = (
+    "You are an expert e-commerce copywriter.\n"
+    "Write a compelling, SEO-optimized product description.\n"
+    "Focus on benefits, clarity, and persuasive tone.\n"
+    "Keep it natural and engaging.\n\n"
+    + item["input"]
+)
     formatted_data.append({
         "input": formatted_input,
         "output": item["output"]
     })
 
-# ==============================
-# 2. CONVERT TO DATASET
-# ==============================
-from datasets import Dataset
-
 dataset = Dataset.from_list(formatted_data)
 
-# ==============================
-# 3. LOAD MODEL & TOKENIZER
-# ==============================
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+# Train/validation split (90/10)
+dataset = dataset.train_test_split(test_size=0.1, seed=42)
 
-model_name = "google/flan-t5-small"
+# ==============================
+# MODEL
+# ==============================
+model_name = "google/flan-t5-base"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-# ==============================
-# 4. APPLY LORA (PEFT)
-# ==============================
-from peft import LoraConfig, get_peft_model, TaskType
+# ❌ REMOVED: model.config.tie_word_embeddings = False
+# Flan-T5 is pretrained with tied embeddings.
+# Untying introduces random weights and destabilizes training.
 
+# ==============================
+# LORA
+# ==============================
 lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
-    target_modules=["q", "v"],
+    # ✅ Expanded from ["q", "v"] to include key & output projections
+    target_modules=["q", "k", "v", "o"],
     lora_dropout=0.1,
     bias="none",
     task_type=TaskType.SEQ_2_SEQ_LM
 )
 
 model = get_peft_model(model, lora_config)
-
 model.print_trainable_parameters()
 
 # ==============================
-# 5. TOKENIZATION (FIXED)
+# TOKENIZATION
 # ==============================
-def tokenize_function(example):
+def tokenize(example):
     inputs = tokenizer(
         example["input"],
         padding="max_length",
         truncation=True,
-        max_length=128
+        max_length=256
     )
-
     targets = tokenizer(
         example["output"],
         padding="max_length",
         truncation=True,
-        max_length=128
+        max_length=256
     )
 
-    labels = targets["input_ids"]
-
-    # IMPORTANT: Replace padding token with -100
+    # Mask padding tokens in labels so they don't contribute to loss
     labels = [
         (l if l != tokenizer.pad_token_id else -100)
-        for l in labels
+        for l in targets["input_ids"]
     ]
 
     inputs["labels"] = labels
     return inputs
 
-tokenized_dataset = dataset.map(tokenize_function)
-
-# Remove unnecessary columns
-tokenized_dataset = tokenized_dataset.remove_columns(["input", "output"])
-tokenized_dataset.set_format("torch")
+tokenized = dataset.map(tokenize)
+tokenized["train"] = tokenized["train"].remove_columns(["input", "output"])
+tokenized["test"] = tokenized["test"].remove_columns(["input", "output"])
+tokenized["train"].set_format("torch")
+tokenized["test"].set_format("torch")
 
 # ==============================
-# 6. TRAINING CONFIG
+# TRAINING
 # ==============================
-from transformers import TrainingArguments
-
 training_args = TrainingArguments(
     output_dir="./results",
-    learning_rate=3e-4,
+    learning_rate=2e-4,
     per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+
+    # ✅ Reduced from 8 to avoid overfitting on small datasets
     num_train_epochs=5,
-    logging_dir="./logs",
+
+    # ✅ Evaluate every epoch to track overfitting
+    eval_strategy="epoch",
+
+    # ✅ Only keep the best checkpoint, not all 5
     save_strategy="epoch",
-    fp16=False
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_loss",
+    greater_is_better=False,
+
+    # ✅ Enable mixed precision on GPU for faster training
+    fp16=torch.cuda.is_available(),
+
+    logging_dir="./logs",
+    logging_steps=10,
 )
-
-# ==============================
-# 7. TRAINER
-# ==============================
-from transformers import Trainer
-
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset,
+    train_dataset=tokenized["train"],
+    eval_dataset=tokenized["test"],
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
 )
 
-# ==============================
-# 8. TRAIN MODEL
-# ==============================
-model.train()
 trainer.train()
 
 # ==============================
-# 9. SAVE MODEL
+# SAVE (adapter only, not tokenizer)
 # ==============================
 model.save_pretrained("fine-tuned-model")
-tokenizer.save_pretrained("fine-tuned-model")
 
-# ==============================
-# 10. INFERENCE
-# ==============================
-model.eval()
-
-def generate_description(text):
-    inputs = tokenizer(text, return_tensors="pt")
-    outputs = model.generate(**inputs, max_length=150)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-# Test
-print(generate_description(
-    "Write a professional and SEO-friendly product description:\nProduct: Smartphone | Features: 5G, Fast charging | Audience: Professionals"
-))
+# ✅ Tokenizer is identical to base model — no need to duplicate it here.
+# At inference time, load with: AutoTokenizer.from_pretrained("google/flan-t5-base")
