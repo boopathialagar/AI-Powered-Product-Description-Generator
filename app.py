@@ -4,15 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from peft import PeftModel
 import os
 
-# =========================
-# DEVICE SETUP
-# =========================
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# =========================
-# MAIN MODEL
-# =========================
 
 base_model_name = "google/flan-t5-small"
 adapter_path = os.path.join(os.getcwd(), "fine_tuned_model")
@@ -32,10 +24,6 @@ model = model.to(device)
 model.eval()
 print("Main model loaded successfully!")
 
-# =========================
-# TRANSLATION MODEL
-# =========================
-
 translator_name = "facebook/nllb-200-distilled-600M"
 
 print("Loading translation tokenizer...")
@@ -49,10 +37,6 @@ trans_model = AutoModelForSeq2SeqLM.from_pretrained(
 ).to(device)
 trans_model.eval()
 print("Translation model loaded successfully!")
-
-# =========================
-# ENGLISH DESCRIPTION
-# =========================
 
 def generate_english(product, features, audience, category, brand):
     prompt = f"""Write a professional, engaging, SEO-optimized product description.
@@ -86,10 +70,6 @@ Generate a compelling product description:"""
 
     return tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
 
-# =========================
-# TAMIL TRANSLATION
-# =========================
-
 def translate_to_tamil(text):
     inputs = trans_tokenizer(
         text, return_tensors="pt", padding=True, truncation=True, max_length=512
@@ -104,10 +84,6 @@ def translate_to_tamil(text):
 
     return trans_tokenizer.decode(translated[0], skip_special_tokens=True)
 
-# =========================
-# MAIN GENERATION FUNCTION
-# =========================
-
 def generate_description(product, features, audience, category, brand):
     if product.strip() == "":
         return "Please enter a product name.", ""
@@ -117,10 +93,6 @@ def generate_description(product, features, audience, category, brand):
         return english, tamil
     except Exception as e:
         return f"Error: {str(e)}", ""
-
-# =========================
-# CUSTOM CSS
-# =========================
 
 css = """
 /* ── Google Font ── */
@@ -320,14 +292,8 @@ body, .gradio-container {
     text-align: center;
 }
 """
-
-# =========================
-# GRADIO UI
-# =========================
-
 with gr.Blocks(css=css, title="Product Description Generator") as demo:
 
-    # ── Header ──
     gr.HTML("""
     <div class="app-header">
         <h1>Product description generator</h1>
@@ -340,10 +306,8 @@ with gr.Blocks(css=css, title="Product Description Generator") as demo:
 
     with gr.Tabs():
 
-        # ── Tab 1: Generate ──
         with gr.Tab("Generate"):
 
-            # Product identity row
             gr.HTML('<div class="section-label">Product identity</div>')
             with gr.Row():
                 product  = gr.Textbox(label="Product name",  placeholder="e.g. Wireless Earbuds", scale=2)
@@ -352,7 +316,6 @@ with gr.Blocks(css=css, title="Product Description Generator") as demo:
 
             gr.HTML('<div class="divider"></div>')
 
-            # Audience + features row
             gr.HTML('<div class="section-label">Description inputs</div>')
             with gr.Row():
                 audience = gr.Textbox(label="Target audience", placeholder="e.g. Young professionals", scale=1)
@@ -362,7 +325,6 @@ with gr.Blocks(css=css, title="Product Description Generator") as demo:
 
             generate_btn = gr.Button("Generate description →", elem_classes=["generate-btn"])
 
-            # Output
             gr.HTML('<div class="section-label" style="margin-top:1.5rem;">Output</div>')
             with gr.Row():
                 with gr.Column():
@@ -372,7 +334,6 @@ with gr.Blocks(css=css, title="Product Description Generator") as demo:
                     gr.HTML('<div class="lang-tag">🇮🇳 Tamil</div>')
                     tamil_output = gr.Textbox(label="", lines=8, show_label=False, elem_classes=["output-box"])
 
-        # ── Tab 2: How it works ──
         with gr.Tab("How it works"):
             gr.HTML("""
             <div style="padding: 0.5rem 0;">
@@ -398,14 +359,12 @@ with gr.Blocks(css=css, title="Product Description Generator") as demo:
             </div>
             """)
 
-    # ── Footer ──
     gr.HTML("""
     <div class="app-footer">
         Running on · <strong>FLAN-T5 small + LoRA</strong> · NLLB-200 Translation
     </div>
     """)
 
-    # ── Event ──
     generate_btn.click(
         fn=generate_description,
         inputs=[product, features, audience, category, brand],
